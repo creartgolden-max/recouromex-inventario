@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Recouromex · Conciliación Semanal</title>
+  <title>Recouromex Â· ConciliaciÃ³n Semanal</title>
 
   <!-- Libreria de Supabase para el navegador (CDN) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -119,9 +119,9 @@
 </head>
 <body>
   <header>
-    <button class="btn-salir" id="btnSalir">Cerrar sesión</button>
+    <button class="btn-salir" id="btnSalir">Cerrar sesiÃ³n</button>
     <div class="logo">RECOUROMEX</div>
-    <div class="sub">Conciliación Semanal</div>
+    <div class="sub">ConciliaciÃ³n Semanal</div>
     <div class="sesion-quien" id="quien"></div>
   </header>
 
@@ -131,7 +131,7 @@
         <label for="semana">Semana a conciliar</label>
         <input id="semana" type="text" placeholder="Ej: SEM-2026-05-18" autocomplete="off" />
       </div>
-      <button id="btnCargar">Cargar conciliación</button>
+      <button id="btnCargar">Cargar conciliaciÃ³n</button>
     </div>
     <div class="resumen" id="resumen"></div>
   </div>
@@ -144,11 +144,11 @@
         <tr>
           <th>Producto</th>
           <th>Unidad</th>
-          <th>Físico (Fernando)</th>
+          <th>FÃ­sico (Fernando)</th>
           <th>ERP</th>
           <th>Dif %</th>
           <th>Alerta</th>
-          <th>Acción</th>
+          <th>AcciÃ³n</th>
           <th>Nota</th>
         </tr>
       </thead>
@@ -158,7 +158,7 @@
 
   <div class="barra-guardar">
     <div class="interno">
-      <button id="btnGuardar" disabled>Guardar conciliación</button>
+      <button id="btnGuardar" disabled>Guardar conciliaciÃ³n</button>
     </div>
   </div>
 
@@ -175,7 +175,7 @@
     (function () {
       try {
         const s = JSON.parse(localStorage.getItem("recouromex_sesion") || "null");
-        if (s && s.nombre) document.getElementById("quien").textContent = s.nombre + " · " + (s.rol || "");
+        if (s && s.nombre) document.getElementById("quien").textContent = s.nombre + " Â· " + (s.rol || "");
       } catch (e) {}
       const bs = document.getElementById("btnSalir");
       if (bs) bs.addEventListener("click", function () {
@@ -237,7 +237,7 @@
       }
 
       btnCargar.disabled = true;
-      btnCargar.textContent = "Cargando…";
+      btnCargar.textContent = "Cargandoâ¦";
 
       try {
         const [resProd, resConteo, resConc] = await Promise.all([
@@ -310,9 +310,9 @@
         btnGuardar.disabled = false;
 
         if (conteos.length === 0) {
-          msg("Aviso: no hay conteo de Fernando para la semana " + idSemana + ". Los físicos aparecen en 0. Aun así puedes capturar el ERP.", "info");
+          msg("Aviso: no hay conteo de Fernando para la semana " + idSemana + ". Los fÃ­sicos aparecen en 0. Aun asÃ­ puedes capturar el ERP.", "info");
         } else {
-          msg("Conciliación cargada para " + idSemana + " · " + grupos.length + " productos madre.", "exito");
+          msg("ConciliaciÃ³n cargada para " + idSemana + " Â· " + grupos.length + " productos madre.", "exito");
         }
         actualizarResumen();
       } catch (e) {
@@ -320,7 +320,7 @@
         msg("Error al cargar: " + e.message, "error");
       } finally {
         btnCargar.disabled = false;
-        btnCargar.textContent = "Cargar conciliación";
+        btnCargar.textContent = "Cargar conciliaciÃ³n";
       }
     }
 
@@ -331,7 +331,7 @@
         const m = g.codigo_madre;
         const presTxt = g.nombre + (g.ids.length > 1 ? " (+" + (g.ids.length - 1) + " present.)" : "");
 
-        let opciones = '<option value="">(elegir acción)</option>';
+        let opciones = '<option value="">(elegir acciÃ³n)</option>';
         ACCIONES.forEach(function (a) { opciones += '<option value="' + a + '">' + a + '</option>'; });
 
         const tr = document.createElement("tr");
@@ -341,10 +341,10 @@
           '<td>' + g.unidad + '</td>' +
           '<td class="fisico">' + fmt(g.fisico) + ' ' + unidadCorta(g.unidad) + '</td>' +
           '<td><input class="erp-input" id="erp-' + m + '" type="number" inputmode="decimal" step="any" min="0" placeholder="ERP" /></td>' +
-          '<td class="dif" id="dif-' + m + '">—</td>' +
+          '<td class="dif" id="dif-' + m + '">â</td>' +
           '<td id="alerta-' + m + '"><span class="pendiente">pendiente</span></td>' +
           '<td><div id="accion-wrap-' + m + '" style="display:none;"><select class="accion-sel" id="accion-' + m + '">' + opciones + '</select></div></td>' +
-          '<td><input class="nota-input" id="nota-' + m + '" type="text" placeholder="Nota / explicación" /></td>';
+          '<td><input class="nota-input" id="nota-' + m + '" type="text" placeholder="Nota / explicaciÃ³n" /></td>';
         tbody.appendChild(tr);
 
         // Precargar valores de una conciliacion previa, si existe
@@ -380,7 +380,7 @@
       const d = computeDif(g.fisico, erpStr);
 
       if (d.estado === "PENDIENTE") {
-        difCell.textContent = "—";
+        difCell.textContent = "â";
         alertaCell.innerHTML = '<span class="pendiente">pendiente</span>';
         row.classList.remove("incong");
         accionWrap.style.display = "none";
@@ -408,8 +408,8 @@
         if (d.estado !== "PENDIENTE") conciliados++;
         if (d.alerta === "INCONGRUENCIA") incong++;
       });
-      resumen.innerHTML = "Renglones: " + grupos.length + " · Conciliados: " + conciliados +
-        " · <span class='rojo'>Incongruencias: " + incong + "</span>";
+      resumen.innerHTML = "Renglones: " + grupos.length + " Â· Conciliados: " + conciliados +
+        " Â· <span class='rojo'>Incongruencias: " + incong + "</span>";
     }
 
     // ---------- Guardar conciliacion ----------
@@ -442,10 +442,10 @@
       });
 
       btnGuardar.disabled = true;
-      btnGuardar.textContent = "Guardando…";
+      btnGuardar.textContent = "Guardandoâ¦";
 
       try {
-        // ¿Que madres ya estaban conciliadas para esta semana?
+        // Â¿Que madres ya estaban conciliadas para esta semana?
         const { data: existentes, error: errEx } = await db
           .from("conciliaciones")
           .select("codigo_madre")
@@ -472,12 +472,32 @@
           if (error) throw error;
         }
 
-        msg("✓ Conciliación guardada: " + registros.length + " renglones para la semana " + idSemana + ".", "exito");
+        msg("â ConciliaciÃ³n guardada: " + registros.length + " renglones para la semana " + idSemana + ".", "exito");
+
+      // ── Notificación por correo (NO bloqueante) ──
+      const NOTIF_URL = 'https://script.google.com/macros/s/AKfycbyWWstBwLNmfA_8gnR2NG-arRZ18JuEREbeqqTjp7zrp39REzwlSJQmchsoiq2Ody0S/exec';
+      const totalReg = registros.length;
+      const okCount = registros.filter(function(r) { return r.alerta === 'OK'; }).length;
+      const incCount = registros.filter(function(r) { return r.alerta === 'INCONGRUENCIA'; }).length;
+      fetch(NOTIF_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tipo: 'conciliacion_terminada',
+          semana: idSemana,
+          datos: { total: totalReg, ok: okCount, incongruencias: incCount }
+        })
+      }).then(function(r) {
+        console.log('Notificación conciliación enviada, status:', r.status);
+      }).catch(function(err) {
+        console.error('No se pudo enviar la notificación de conciliación:', err);
+      });
+      // ── Fin notificación ──
       } catch (e) {
         msg("Error al guardar: " + e.message, "error");
       } finally {
         btnGuardar.disabled = false;
-        btnGuardar.textContent = "Guardar conciliación";
+        btnGuardar.textContent = "Guardar conciliaciÃ³n";
       }
     }
 
