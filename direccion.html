@@ -3,10 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Recouromex · Aprobación de Cierre</title>
+  <title>Recouromex Â· AprobaciÃ³n de Cierre</title>
 
   <!-- Libreria de Supabase para el navegador (CDN) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 
   <style>
     :root {
@@ -89,13 +91,16 @@
     }
     .btn-salir:hover { background: #d8bd7e; }
     .sesion-quien { font-size: 11px; color: var(--dorado); letter-spacing: 0.5px; margin-top: 4px; min-height: 13px; }
+    .btn-pdf { padding: 10px 16px; font-size: 14px; font-weight: bold; color: var(--verde); background: var(--dorado); border: 2px solid var(--dorado); border-radius: 8px; cursor: pointer; white-space: nowrap; }
+    .btn-pdf:hover { background: #d8bd7e; }
+    .btn-pdf:disabled { opacity: 0.6; cursor: wait; }
   </style>
 </head>
 <body>
   <header>
-    <button class="btn-salir" id="btnSalir">Cerrar sesión</button>
+    <button class="btn-salir" id="btnSalir">Cerrar sesiÃ³n</button>
     <div class="logo">RECOUROMEX</div>
-    <div class="sub">Aprobación de Cierre</div>
+    <div class="sub">AprobaciÃ³n de Cierre</div>
     <div class="sesion-quien" id="quien"></div>
   </header>
 
@@ -106,6 +111,7 @@
         <input id="semana" type="text" placeholder="Ej: SEM-2026-05-18" autocomplete="off" />
       </div>
       <button id="btnCargar">Cargar cierre</button>
+    <button id="btnPdfDir" class="btn-pdf">&#128196; Generar PDF Ejecutivo</button>
     </div>
   </div>
 
@@ -120,8 +126,8 @@
     <table>
       <thead>
         <tr>
-          <th>Producto</th><th>Unidad</th><th>Físico</th><th>ERP</th>
-          <th>Dif %</th><th>Alerta</th><th>Acción</th><th>Nota</th>
+          <th>Producto</th><th>Unidad</th><th>FÃ­sico</th><th>ERP</th>
+          <th>Dif %</th><th>Alerta</th><th>AcciÃ³n</th><th>Nota</th>
         </tr>
       </thead>
       <tbody id="tbody"></tbody>
@@ -147,7 +153,7 @@
     (function () {
       try {
         const s = JSON.parse(localStorage.getItem("recouromex_sesion") || "null");
-        if (s && s.nombre) document.getElementById("quien").textContent = s.nombre + " · " + (s.rol || "");
+        if (s && s.nombre) document.getElementById("quien").textContent = s.nombre + " Â· " + (s.rol || "");
       } catch (e) {}
       const bs = document.getElementById("btnSalir");
       if (bs) bs.addEventListener("click", function () {
@@ -184,7 +190,7 @@
       idSemana = inputSemana.value.trim();
       if (!idSemana) { msg("Escribe el id de la semana (ej: SEM-2026-05-18).", "error"); return; }
 
-      btnCargar.disabled = true; btnCargar.textContent = "Cargando…";
+      btnCargar.disabled = true; btnCargar.textContent = "Cargandoâ¦";
       try {
         const [resConc, resProd] = await Promise.all([
           db.from("conciliaciones")
@@ -202,7 +208,7 @@
           panel.style.display = "none";
           tablaWrap.style.display = "none";
           btnAprobar.disabled = true;
-          msg("No hay conciliación guardada para la semana " + idSemana + ". Alma debe guardar la conciliación primero.", "error");
+          msg("No hay conciliaciÃ³n guardada para la semana " + idSemana + ". Alma debe guardar la conciliaciÃ³n primero.", "error");
           return;
         }
 
@@ -217,7 +223,7 @@
         });
         filas.forEach(function (f) { f._nombre = mapaNombre[f.codigo_madre] || ""; });
 
-        // ¿La semana ya esta cerrada? (tolerante a que la tabla "semanas" no exista aun)
+        // Â¿La semana ya esta cerrada? (tolerante a que la tabla "semanas" no exista aun)
         semanaCerrada = false; infoCierre = null;
         try {
           const { data: sem, error: eSem } = await db.from("semanas")
@@ -255,12 +261,12 @@
         else if (esOk) alertaHtml = '<span class="badge ok">OK</span>';
         else alertaHtml = '<span class="badge pend">pendiente</span>';
 
-        // Acción y nota: si es incongruencia y falta, lo marcamos en rojo
-        let accionHtml = f.accion ? f.accion : (esIncong ? '<span class="falta">FALTA</span>' : "—");
-        let notaHtml = tieneTexto(f.nota) ? f.nota : (esIncong ? '<span class="falta">FALTA</span>' : "—");
+        // AcciÃ³n y nota: si es incongruencia y falta, lo marcamos en rojo
+        let accionHtml = f.accion ? f.accion : (esIncong ? '<span class="falta">FALTA</span>' : "â");
+        let notaHtml = tieneTexto(f.nota) ? f.nota : (esIncong ? '<span class="falta">FALTA</span>' : "â");
 
-        const dif = (f.diferencia_pct === null || f.diferencia_pct === undefined) ? "—" : (fmt(f.diferencia_pct) + " %");
-        const erp = (f.erp === null || f.erp === undefined) ? "—" : fmt(f.erp);
+        const dif = (f.diferencia_pct === null || f.diferencia_pct === undefined) ? "â" : (fmt(f.diferencia_pct) + " %");
+        const erp = (f.erp === null || f.erp === undefined) ? "â" : fmt(f.erp);
 
         tr.innerHTML =
           '<td><span class="madre">' + f.codigo_madre + '</span><br><span class="pres">' + (f._nombre || "") + '</span></td>' +
@@ -301,20 +307,20 @@
         const fecha = infoCierre ? fechaLegible(infoCierre.fecha_aprobada) : "";
         const quien = infoCierre && infoCierre.aprobada_por ? (" por " + infoCierre.aprobada_por) : "";
         checklistBox.className = "checklist cerrada";
-        checklistBox.innerHTML = "🔒 Esta semana ya fue aprobada el " + fecha + quien + ". No se puede aprobar de nuevo.";
+        checklistBox.innerHTML = "ð Esta semana ya fue aprobada el " + fecha + quien + ". No se puede aprobar de nuevo.";
         puedeAprobar = false;
       } else if (incompletas > 0) {
         checklistBox.className = "checklist alto";
-        checklistBox.innerHTML = "⚠️ Hay incongruencias sin acción/nota, revisar antes de aprobar." +
-          '<div class="det">' + incompletas + " de " + incong + " incongruencia(s) están incompletas.</div>";
+        checklistBox.innerHTML = "â ï¸ Hay incongruencias sin acciÃ³n/nota, revisar antes de aprobar." +
+          '<div class="det">' + incompletas + " de " + incong + " incongruencia(s) estÃ¡n incompletas.</div>";
         puedeAprobar = false;
       } else {
         checklistBox.className = "checklist ok";
-        checklistBox.innerHTML = "✅ Listo para aprobar." +
+        checklistBox.innerHTML = "â Listo para aprobar." +
           '<div class="det">' + (incong === 0
             ? "No hay incongruencias."
-            : "Las " + incong + " incongruencia(s) tienen acción y nota.") +
-          (pendientes > 0 ? " Aviso: " + pendientes + " renglón(es) sin ERP capturado." : "") + '</div>';
+            : "Las " + incong + " incongruencia(s) tienen acciÃ³n y nota.") +
+          (pendientes > 0 ? " Aviso: " + pendientes + " renglÃ³n(es) sin ERP capturado." : "") + '</div>';
         puedeAprobar = true;
       }
 
@@ -325,7 +331,7 @@
     async function aprobar() {
       if (!puedeAprobar) return;
 
-      btnAprobar.disabled = true; btnAprobar.textContent = "Aprobando…";
+      btnAprobar.disabled = true; btnAprobar.textContent = "Aprobandoâ¦";
       try {
         const ahora = new Date().toISOString();
 
@@ -389,9 +395,9 @@
         semanaCerrada = true;
         infoCierre = semReg;
         evaluarChecklist(); // bloquea el boton y muestra el aviso de "ya aprobada"
-        msg("✅ Cierre aprobado. Inventario actualizado.", "exito");
+        msg("â Cierre aprobado. Inventario actualizado.", "exito");
       } catch (e) {
-        msg("Error al aprobar: " + e.message + "  (¿Ya creaste las tablas inventario, cierres y semanas en Supabase?)", "error");
+        msg("Error al aprobar: " + e.message + "  (Â¿Ya creaste las tablas inventario, cierres y semanas en Supabase?)", "error");
         btnAprobar.disabled = false;
       } finally {
         btnAprobar.textContent = "Aprobar cierre";
@@ -401,6 +407,220 @@
     btnCargar.addEventListener("click", cargar);
     btnAprobar.addEventListener("click", aprobar);
     inputSemana.addEventListener("keydown", function (e) { if (e.key === "Enter") cargar(); });
+    document.getElementById("btnPdfDir").addEventListener("click", generarPDFDir);
+
+    // ============================================================
+    // GENERAR PDF EJECUTIVO (desde dirección.html) — jsPDF + autoTable
+    // ============================================================
+    async function generarPDFDir() {
+      const btn = document.getElementById("btnPdfDir");
+      btn.disabled = true; btn.textContent = "Generando PDF…";
+      try {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "letter" });
+        const W = doc.internal.pageSize.getWidth();
+        const H = doc.internal.pageSize.getHeight();
+        const M = 20;
+        const hoy = new Date().toLocaleDateString("es-MX", { year:"numeric", month:"long", day:"numeric" });
+        const hoyISO = new Date().toISOString().slice(0,10).replace(/-/g,"");
+        const VERDE=[15,40,24], DORADO=[201,169,97], BLANCO=[255,255,255];
+        const OK_C=[28,122,69], OK_BG=[236,246,240];
+        const NAR_C=[184,115,15], NAR_BG=[253,243,227];
+        const ROJ_C=[138,28,28], ROJ_BG=[253,236,236];
+
+        function addFooter(pn) {
+          doc.setFillColor(...VERDE); doc.rect(0,H-10,W,10,"F");
+          doc.setFont("helvetica","italic"); doc.setFontSize(8); doc.setTextColor(...DORADO);
+          doc.text("RECOUROMEX · Sistema de Inventario · Confidencial", M, H-3.5);
+          doc.text("Pág. "+pn, W-M, H-3.5, {align:"right"});
+        }
+
+        // A) PORTADA
+        doc.setFillColor(...VERDE); doc.rect(0,0,W,H,"F");
+        doc.setFillColor(...DORADO); doc.rect(0,0,W,4,"F"); doc.rect(0,H-4,W,4,"F");
+        doc.setFont("helvetica","bold"); doc.setFontSize(38); doc.setTextColor(...DORADO);
+        doc.text("RECOUROMEX", W/2, 80, {align:"center"});
+        doc.setFontSize(14); doc.setFont("helvetica","italic"); doc.text("Almacén de Importados", W/2, 92, {align:"center"});
+        doc.setDrawColor(...DORADO); doc.setLineWidth(0.5); doc.line(M+20,100,W-M-20,100);
+        doc.setFont("helvetica","bold"); doc.setFontSize(22); doc.setTextColor(...BLANCO);
+        doc.text("Reporte Ejecutivo", W/2, 115, {align:"center"});
+        doc.setFontSize(16); doc.setTextColor(...DORADO);
+        doc.text("Aprobación de Cierre", W/2, 126, {align:"center"});
+        doc.line(M+20,134,W-M-20,134);
+        doc.setFont("helvetica","normal"); doc.setFontSize(12); doc.setTextColor(...BLANCO);
+        doc.text("Corte al "+hoy, W/2, 146, {align:"center"});
+        doc.setFontSize(10); doc.setTextColor(180,170,140);
+        doc.text("Semana: "+(idSemana||"—"), W/2, 156, {align:"center"});
+        doc.line(M+20,172,W-M-20,172);
+        doc.setFontSize(11); doc.setTextColor(...DORADO);
+        doc.text("Dirección General · Rodrigo", W/2, 182, {align:"center"});
+        addFooter(1);
+
+        // B) RESUMEN EJECUTIVO
+        doc.addPage();
+        doc.setFillColor(...VERDE); doc.rect(0,0,W,14,"F");
+        doc.setFont("helvetica","bold"); doc.setFontSize(11); doc.setTextColor(...DORADO);
+        doc.text("APROBACIÓN DE CIERRE · "+(idSemana||"—"), M, 9);
+        let y=24;
+        doc.setFont("helvetica","bold"); doc.setFontSize(16); doc.setTextColor(...VERDE);
+        doc.text("B. Resumen Ejecutivo", M, y); y+=10;
+        let cOk=0, cInc=0, cPend=0;
+        filas.forEach(function(f){
+          if(f.alerta==="OK") cOk++;
+          else if(f.alerta==="INCONGRUENCIA") cInc++;
+          else cPend++;
+        });
+        const kpis=[{n:filas.length,l:"Total renglones",col:VERDE},{n:cOk,l:"OK",col:OK_C},{n:cInc,l:"Incongruencias",col:ROJ_C},{n:cPend,l:"Pendientes",col:NAR_C}];
+        const bW=(W-M*2-9)/4;
+        kpis.forEach(function(k,i){
+          const bx=M+i*(bW+3);
+          doc.setFillColor(248,246,240); doc.roundedRect(bx,y,bW,22,2,2,"F");
+          doc.setDrawColor(...k.col); doc.setLineWidth(1); doc.line(bx,y,bx+bW,y);
+          doc.setFont("helvetica","bold"); doc.setFontSize(20); doc.setTextColor(...k.col);
+          doc.text(String(k.n),bx+bW/2,y+13,{align:"center"});
+          doc.setFont("helvetica","normal"); doc.setFontSize(8); doc.setTextColor(80,80,80);
+          doc.text(k.l,bx+bW/2,y+19,{align:"center"});
+        });
+        y+=30;
+        const pct=filas.length>0?Math.round(cOk/filas.length*100):0;
+        let par="Semana "+idSemana+". Conciliación con "+filas.length+" renglones: "+pct+"% OK. ";
+        if(cInc>0) par+=cInc+" incongruencia(s) registradas con acción/nota. ";
+        else par+="Sin incongruencias. ";
+        if(semanaCerrada) par+="Semana ya CERRADA y aprobada.";
+        else par+="Pendiente de aprobación.";
+        doc.setFont("helvetica","normal"); doc.setFontSize(10); doc.setTextColor(40,40,40);
+        const ls=doc.splitTextToSize(par,W-M*2);
+        doc.text(ls,M,y);
+        addFooter(2);
+
+        // C) INCONGRUENCIAS
+        doc.addPage();
+        doc.setFillColor(...VERDE); doc.rect(0,0,W,14,"F");
+        doc.setFont("helvetica","bold"); doc.setFontSize(11); doc.setTextColor(...DORADO);
+        doc.text("APROBACIÓN DE CIERRE · "+(idSemana||"—"), M, 9);
+        y=24; doc.setFont("helvetica","bold"); doc.setFontSize(16); doc.setTextColor(...VERDE);
+        doc.text("C. Productos con Incongruencias", M, y); y+=8;
+        const incRows=filas.filter(function(f){return f.alerta==="INCONGRUENCIA";});
+        if(incRows.length===0){
+          doc.setFillColor(...OK_BG); doc.roundedRect(M,y,W-M*2,14,2,2,"F");
+          doc.setFont("helvetica","italic"); doc.setFontSize(11); doc.setTextColor(...OK_C);
+          doc.text("✓ Sin incongruencias en esta semana.", M+4, y+9);
+        } else {
+          doc.autoTable({startY:y,
+            head:[["Código","Producto","Físico","ERP","Dif %","Acción","Nota"]],
+            body:incRows.map(function(f){return[f.codigo_madre,f._nombre||"",f.fisico!==null?Number(f.fisico).toLocaleString("es-MX",{maximumFractionDigits:2})+" "+f.unidad:"—",f.erp!==null?Number(f.erp).toLocaleString("es-MX",{maximumFractionDigits:2}):"—",f.diferencia_pct!==null?Number(f.diferencia_pct).toLocaleString("es-MX",{maximumFractionDigits:1})+"%":"—",f.accion||"—",f.nota||"—"];}),
+            theme:"grid",margin:{left:M,right:M},
+            headStyles:{fillColor:VERDE,textColor:DORADO,fontStyle:"bold",fontSize:8},bodyStyles:{fontSize:8},
+            didParseCell:function(data){if(data.section==="body"&&data.column.index===1)data.cell.styles.textColor=ROJ_C;}});
+        }
+        addFooter(3);
+
+        // D) TODAS LAS CONCILIACIONES
+        doc.addPage();
+        doc.setFillColor(...VERDE); doc.rect(0,0,W,14,"F");
+        doc.setFont("helvetica","bold"); doc.setFontSize(11); doc.setTextColor(...DORADO);
+        doc.text("APROBACIÓN DE CIERRE · "+(idSemana||"—"), M, 9);
+        y=24; doc.setFont("helvetica","bold"); doc.setFontSize(16); doc.setTextColor(...VERDE);
+        doc.text("D. Conciliación Completa", M, y);
+        doc.autoTable({startY:y+6,
+          head:[["Código","Producto","Físico","ERP","Dif %","Alerta","Acción"]],
+          body:filas.map(function(f){return[f.codigo_madre,f._nombre||"",f.fisico!==null?Number(f.fisico).toLocaleString("es-MX",{maximumFractionDigits:2})+" "+f.unidad:"—",f.erp!==null?Number(f.erp).toLocaleString("es-MX",{maximumFractionDigits:2}):"—",f.diferencia_pct!==null?Number(f.diferencia_pct).toLocaleString("es-MX",{maximumFractionDigits:1})+"%":"—",f.alerta||"pendiente",f.accion||"—"];}),
+          theme:"striped",margin:{left:M,right:M},
+          headStyles:{fillColor:VERDE,textColor:DORADO,fontStyle:"bold",fontSize:8},bodyStyles:{fontSize:8},
+          columnStyles:{5:{fontStyle:"bold"}},
+          didParseCell:function(data){if(data.section==="body"&&data.column.index===5){const v=data.cell.raw;if(v==="INCONGRUENCIA")data.cell.styles.textColor=ROJ_C;else if(v==="OK")data.cell.styles.textColor=OK_C;}},
+          didDrawPage:function(data){addFooter(3+data.pageNumber);}});
+
+        // E) + F) — Secciones de stock e inventario (desde Supabase en tiempo real)
+        let stockDataDir=[], cierresDir={}, semanasDir=[], madresDir=[], invMapDir={};
+        try {
+          const [rP,rI,rC]=await Promise.all([
+            db.from("productos").select("id,codigo_madre,nombre,unidad_conciliacion,minimo_lts").order("id",{ascending:true}),
+            db.from("inventario").select("codigo_madre,stock_actual,unidad"),
+            db.from("cierres").select("id_semana,codigo_madre,saldo")
+          ]);
+          const orden2=[]; const mapaM2={};
+          (rP.data||[]).forEach(function(p){
+            if(!mapaM2[p.codigo_madre]){mapaM2[p.codigo_madre]={codigo_madre:p.codigo_madre,nombre:p.nombre,unidad:p.unidad_conciliacion,minimo:0};orden2.push(p.codigo_madre);}
+            mapaM2[p.codigo_madre].minimo+=(parseFloat(p.minimo_lts)||0);
+          });
+          madresDir=orden2.map(function(m){return mapaM2[m];});
+          (rI.data||[]).forEach(function(r){invMapDir[r.codigo_madre]={stock:parseFloat(r.stock_actual),unidad:r.unidad};});
+          const setSem2={};
+          (rC.data||[]).forEach(function(r){
+            if(!cierresDir[r.codigo_madre])cierresDir[r.codigo_madre]=[];
+            cierresDir[r.codigo_madre].push({id_semana:r.id_semana,saldo:parseFloat(r.saldo)});
+            setSem2[r.id_semana]=true;
+          });
+          Object.keys(cierresDir).forEach(function(m){cierresDir[m].sort(function(a,b){return a.id_semana<b.id_semana?-1:1;});});
+          semanasDir=Object.keys(setSem2).sort();
+          stockDataDir=madresDir.map(function(m){
+            const inv=invMapDir[m.codigo_madre]; const stock=inv?inv.stock:null;
+            const est=stock===null||stock===undefined?{clave:"gris",txt:"sin dato"}:stock===0?{clave:"rojo",txt:"SIN STOCK"}:stock<=m.minimo?{clave:"naranja",txt:"BAJO MÍNIMO"}:{clave:"verde",txt:"OK"};
+            return{m,stock,est,inv};
+          });
+        } catch(e){ /* silencioso */ }
+
+        const hastaDir=semanasDir.length?semanasDir[semanasDir.length-1]:"—";
+        const pgC=doc.internal.getNumberOfPages();
+
+        if(madresDir.length>0){
+          // E) STOCK ACTUAL
+          doc.addPage();
+          doc.setFillColor(...VERDE); doc.rect(0,0,W,14,"F");
+          doc.setFont("helvetica","bold"); doc.setFontSize(11); doc.setTextColor(...DORADO);
+          doc.text("REPORTE EJECUTIVO · "+hoy, M, 9);
+          y=24; doc.setFont("helvetica","bold"); doc.setFontSize(16); doc.setTextColor(...VERDE);
+          doc.text("E. Stock Actual por Producto", M, y);
+          doc.autoTable({startY:y+6,
+            head:[["Código","Producto","Stock actual","Unidad","Mínimo","Estado"]],
+            body:stockDataDir.map(function(d){const uc=d.inv?d.inv.unidad:d.m.unidad;return[d.m.codigo_madre,d.m.nombre,d.stock!==null?d.stock.toLocaleString("es-MX",{maximumFractionDigits:2})+" "+uc:"—",d.inv?d.inv.unidad:d.m.unidad,d.m.minimo.toLocaleString("es-MX",{maximumFractionDigits:2})+" "+uc,d.est.txt];}),
+            theme:"striped",margin:{left:M,right:M},
+            headStyles:{fillColor:VERDE,textColor:DORADO,fontStyle:"bold",fontSize:8},bodyStyles:{fontSize:8},
+            columnStyles:{5:{fontStyle:"bold"}},
+            didParseCell:function(data){if(data.section==="body"&&data.column.index===5){const v=data.cell.raw;if(v==="SIN STOCK")data.cell.styles.textColor=ROJ_C;else if(v==="BAJO MÍNIMO")data.cell.styles.textColor=NAR_C;else if(v==="OK")data.cell.styles.textColor=OK_C;}},
+            didDrawPage:function(data){addFooter(pgC+data.pageNumber);}});
+
+          // F) HALLAZGOS
+          const pgF=doc.internal.getNumberOfPages();
+          doc.addPage();
+          doc.setFillColor(...VERDE); doc.rect(0,0,W,14,"F");
+          doc.setFont("helvetica","bold"); doc.setFontSize(11); doc.setTextColor(...DORADO);
+          doc.text("REPORTE EJECUTIVO · "+hoy, M, 9);
+          y=24; doc.setFont("helvetica","bold"); doc.setFontSize(16); doc.setTextColor(...VERDE);
+          doc.text("F. Hallazgos Automáticos", M, y); y+=10;
+          const hall2=[];
+          stockDataDir.forEach(function(d){
+            if(d.stock===0) hall2.push({tipo:"rojo",txt:"SIN STOCK · "+d.m.codigo_madre+": saldo 0."});
+            if(d.stock!==null&&d.stock>0&&d.stock<=d.m.minimo) hall2.push({tipo:"naranja",txt:"BAJO MÍNIMO · "+d.m.codigo_madre+": "+d.stock.toLocaleString("es-MX",{maximumFractionDigits:2})+" vs mínimo "+d.m.minimo.toLocaleString("es-MX",{maximumFractionDigits:2})+"."});
+          });
+          if(hall2.length===0){
+            doc.setFillColor(...OK_BG); doc.roundedRect(M,y,W-M*2,14,2,2,"F");
+            doc.setFont("helvetica","italic"); doc.setFontSize(11); doc.setTextColor(...OK_C);
+            doc.text("✓ Sistema operando sin observaciones.", M+4, y+9);
+          } else {
+            hall2.forEach(function(h){
+              const bgC=h.tipo==="rojo"?ROJ_BG:NAR_BG; const txC=h.tipo==="rojo"?ROJ_C:NAR_C;
+              const wrapped=doc.splitTextToSize("• "+h.txt,W-M*2-8);
+              const hh=wrapped.length*5+4;
+              doc.setFillColor(...bgC); doc.roundedRect(M,y,W-M*2,hh,1.5,1.5,"F");
+              doc.setFont("helvetica","normal"); doc.setFontSize(9); doc.setTextColor(...txC);
+              doc.text(wrapped,M+4,y+5); y+=hh+3;
+              if(y>H-30){doc.addPage();y=M;}
+            });
+          }
+          addFooter(pgF+1);
+        }
+
+        doc.save("Reporte_Ejecutivo_Recouromex_"+hoyISO+".pdf");
+      } catch(err) {
+        alert("Error al generar el PDF: "+err.message);
+        console.error(err);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = "&#128196; Generar PDF Ejecutivo";
+      }
+    }
   </script>
 </body>
 </html>
