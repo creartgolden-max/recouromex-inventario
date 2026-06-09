@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Recouromex · Conteo Físico Semanal</title>
+  <title>Recouromex Â· Conteo FÃ­sico Semanal</title>
 
   <!-- Libreria de Supabase para el navegador (CDN) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -284,9 +284,9 @@
 </head>
 <body>
   <header>
-    <button class="btn-salir" id="btnSalir">Cerrar sesión</button>
+    <button class="btn-salir" id="btnSalir">Cerrar sesiÃ³n</button>
     <div class="logo">RECOUROMEX</div>
-    <div class="sub">Conteo Físico Semanal</div>
+    <div class="sub">Conteo FÃ­sico Semanal</div>
     <div class="sesion-quien" id="quien"></div>
   </header>
 
@@ -300,7 +300,7 @@
   <div id="mensaje" class="mensaje" style="margin-top:12px;"></div>
 
   <div class="lista" id="lista">
-    <div class="mensaje info" style="display:block;">Cargando productos…</div>
+    <div class="mensaje info" style="display:block;">Cargando productosâ¦</div>
   </div>
 
   <div class="barra-guardar">
@@ -323,7 +323,7 @@
     (function () {
       try {
         const s = JSON.parse(localStorage.getItem("recouromex_sesion") || "null");
-        if (s && s.nombre) document.getElementById("quien").textContent = s.nombre + " · " + (s.rol || "");
+        if (s && s.nombre) document.getElementById("quien").textContent = s.nombre + " Â· " + (s.rol || "");
       } catch (e) {}
       const bs = document.getElementById("btnSalir");
       if (bs) bs.addEventListener("click", function () {
@@ -394,7 +394,7 @@
 
         if (productos.length === 0) {
           lista.innerHTML = "";
-          msg("No se recibió ningún producto. Dos causas posibles: (1) la tabla \"productos\" está vacía, o (2) la seguridad RLS de Supabase está bloqueando la lectura pública de \"productos\". Si en el SQL Editor sí ves filas, es lo segundo: agrega una política de lectura para el rol anon.", "info");
+          msg("No se recibiÃ³ ningÃºn producto. Dos causas posibles: (1) la tabla \"productos\" estÃ¡ vacÃ­a, o (2) la seguridad RLS de Supabase estÃ¡ bloqueando la lectura pÃºblica de \"productos\". Si en el SQL Editor sÃ­ ves filas, es lo segundo: agrega una polÃ­tica de lectura para el rol anon.", "info");
           return;
         }
 
@@ -403,7 +403,7 @@
         btnGuardar.disabled = false;
       } catch (e) {
         lista.innerHTML = "";
-        msg("Error de conexión: " + e.message, "error");
+        msg("Error de conexiÃ³n: " + e.message, "error");
       }
     }
 
@@ -431,13 +431,13 @@
           '<span class="badge">' + unidad + '</span>' +
         '</div>' +
         '<div class="nombre">' + prod.nombre + '</div>' +
-        '<div class="minimo">Mínimo de referencia: ' + (prod.minimo_lts ?? "—") +
+        '<div class="minimo">MÃ­nimo de referencia: ' + (prod.minimo_lts ?? "â") +
           ' ' + unidadCorta(unidad) + '</div>' +
         '<label class="campo-label" for="piezas-' + prod.id + '">Piezas contadas</label>' +
         '<input class="piezas" id="piezas-' + prod.id + '" type="number" inputmode="decimal" step="any" min="0" placeholder="0" />' +
         '<div class="equiv" id="equiv-' + prod.id + '">Equivalente: 0 ' + unidadCorta(unidad) + '</div>' +
         '<label class="campo-label" for="obs-' + prod.id + '">Observaciones (opcional)</label>' +
-        '<input class="obs" id="obs-' + prod.id + '" type="text" placeholder="Ej: caja abierta, saldo parcial…" />';
+        '<input class="obs" id="obs-' + prod.id + '" type="text" placeholder="Ej: caja abierta, saldo parcialâ¦" />';
 
       const inp = card.querySelector(".piezas");
       inp.addEventListener("input", function () {
@@ -456,14 +456,14 @@
       card.innerHTML =
         '<div class="prod-top">' +
           '<span class="codigo">' + prod.codigo_hijo + '</span>' +
-          '<span class="badge barril">BARRIL · KG</span>' +
+          '<span class="badge barril">BARRIL Â· KG</span>' +
         '</div>' +
         '<div class="nombre">' + prod.nombre + '</div>' +
-        '<div class="minimo">Mínimo de referencia: ' + (prod.minimo_lts ?? "—") + '</div>' +
+        '<div class="minimo">MÃ­nimo de referencia: ' + (prod.minimo_lts ?? "â") + '</div>' +
 
         '<label class="campo-label" for="cerrados-' + prod.id + '">Barriles cerrados (completos)</label>' +
         '<input class="piezas" id="cerrados-' + prod.id + '" type="number" inputmode="decimal" step="any" min="0" placeholder="0" />' +
-        '<div class="nota-calc">Cada barril cerrado = ' + LITROS_POR_BARRIL + ' L × ' + densidad + ' (densidad) = ' + fmt(LITROS_POR_BARRIL * densidad) + ' kg</div>' +
+        '<div class="nota-calc">Cada barril cerrado = ' + LITROS_POR_BARRIL + ' L Ã ' + densidad + ' (densidad) = ' + fmt(LITROS_POR_BARRIL * densidad) + ' kg</div>' +
 
         '<div class="barril-seccion">' +
           '<div class="barril-titulo">Barriles abiertos (pesar cada uno, en kg)</div>' +
@@ -474,7 +474,7 @@
         '<div class="equiv total-barril" id="total-' + prod.id + '">TOTAL: 0 kg</div>' +
 
         '<label class="campo-label" for="obs-' + prod.id + '">Observaciones (opcional)</label>' +
-        '<input class="obs" id="obs-' + prod.id + '" type="text" placeholder="Ej: barril liberado con nota…" />';
+        '<input class="obs" id="obs-' + prod.id + '" type="text" placeholder="Ej: barril liberado con notaâ¦" />';
 
       // Recalcular cuando cambian los barriles cerrados
       card.querySelector("#cerrados-" + prod.id).addEventListener("input", function () {
@@ -514,7 +514,7 @@
       const del = document.createElement("button");
       del.type = "button";
       del.className = "btn-quitar";
-      del.textContent = "✕";
+      del.textContent = "â";
       del.addEventListener("click", function () {
         row.remove();
         actualizarTotalBarril(prod);
@@ -596,7 +596,7 @@
       else card.classList.remove("contado");
     }
 
-    // ---------- ¿La tarjeta tiene captura? ----------
+    // ---------- Â¿La tarjeta tiene captura? ----------
     function estaContado(prod) {
       if (tipoProducto(prod) === "BARRIL") {
         const cerradosInp = document.getElementById("cerrados-" + prod.id);
@@ -684,12 +684,12 @@
       });
 
       if (capturados.length === 0) {
-        msg("No has capturado ningún producto todavía.", "error");
+        msg("No has capturado ningÃºn producto todavÃ­a.", "error");
         return;
       }
 
       btnGuardar.disabled = true;
-      btnGuardar.textContent = "Guardando…";
+      btnGuardar.textContent = "Guardandoâ¦";
 
       try {
         // 1) Ver que productos ya estaban guardados para esta semana
@@ -722,16 +722,30 @@
           if (error) throw error;
         }
 
-        msg("✓ Conteo guardado: " + capturados.length + " producto(s) para la semana " + idSemana + ".", "exito");
-      } catch (e) {
-        msg("Error al guardar: " + e.message, "error");
-      } finally {
-        btnGuardar.disabled = false;
-        btnGuardar.textContent = "Guardar conteo";
-      }
-    }
+        msg("â Conteo guardado: " + capturados.length + " producto(s) para la semana " + idSemana + ".", "exito");
 
-    btnGuardar.addEventListener("click", guardar);
+      // ── Notificación por correo (NO bloqueante) ──
+      const NOTIF_URL = 'https://script.google.com/macros/s/AKfycbyWWstBwLNmfA_8gnR2NG-arRZ18JuEREbeqqTjp7zrp39REzwlSJQmchsoiq2Ody0S/exec';
+      fetch(NOTIF_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tipo: 'conteo_terminado', semana: idSemana })
+      }).then(function(r) {
+        console.log('Notificación conteo enviada, status:', r.status);
+      }).catch(function(err) {
+        console.error('No se pudo enviar la notificación de conteo:', err);
+      });
+      // ── Fin notificación ──
+
+    } catch (e) {
+      msg("Error al guardar: " + e.message, "error");
+    } finally {
+      btnGuardar.disabled = false;
+      btnGuardar.textContent = "Guardar conteo";
+    }
+  }
+
+  btnGuardar.addEventListener("click", guardar);
 
     // Arranque
     cargarProductos();
